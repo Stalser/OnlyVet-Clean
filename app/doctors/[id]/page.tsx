@@ -2,10 +2,10 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { doctors, getDoctorById } from '../../../lib/data';
-import { getDoctorSchedule } from '../../../lib/doctorSchedule';
-import { getDoctorPricing } from '../../../lib/pricing';
-import Stars from '../../../components/Stars';
+import { doctors, getDoctorById } from '@/lib/data';
+import { getDoctorSchedule } from '@/lib/doctorSchedule';
+import { getDoctorPricing } from '@/lib/pricing';
+import Stars from '@/components/Stars';
 
 export default function DoctorPublicPage() {
   const { id } = useParams<{ id: string }>();
@@ -68,7 +68,11 @@ export default function DoctorPublicPage() {
               {pricing.map((item) => (
                 <li key={item.id} className="flex justify-between">
                   <span>{item.name}</span>
-                  <span className="text-xs text-gray-500">{item.price} ₽</span>
+                  <span className="text-xs text-gray-500">
+                    {item.priceRUB !== undefined
+                      ? `${item.priceRUB.toLocaleString('ru-RU')} ₽`
+                      : 'уточняется'}
+                  </span>
                 </li>
               ))}
             </ul>
