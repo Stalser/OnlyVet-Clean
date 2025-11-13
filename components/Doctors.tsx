@@ -1,219 +1,127 @@
 // components/Doctors.tsx
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { doctors } from '@/lib/data';
-import { servicesPricing, doctorServicesMap } from '@/lib/pricing';
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { doctors } from "@/lib/data";
+import { servicesPricing, doctorServicesMap } from "@/lib/pricing";
 
+// Определяем тип врача из массива doctors
 type Doctor = (typeof doctors)[number];
 
 const INITIAL_VISIBLE = 3; // сколько врачей показываем до "Показать ещё"
 
+// Мини-блок с услугами врача
 function MiniPrice({ doctor }: { doctor: Doctor }) {
-  const codes = doctor.email ? (doctorServicesMap[doctor.email] || []) : [];
+  // Берём список кодов услуг по id врача
+  const codes: string[] = doctorServicesMap[doctor.id] || [];
+
+  // Фильтруем услуги по кодам
   const items = servicesPricing.filter((s) => codes.includes(s.code));
 
   if (!items.length) return null;
 
-  const mainItems = items.slice(0, 2);
-  const extraCount = items.length - mainItems.length;
-
   return (
-    <div className="rounded-xl bg-[var(--cloud)]/60 p-3 mt-2">
-      <div
-        className="text-xs font-semibold mb-1"
-        style={{ color: 'var(--navy)' }}
-      >
-        Услуги врача
-      </div>
-      <ul className="text-xs space-y-1">
-        {mainItems.map((s) => (
-          <li key={s.code} className="flex justify-between gap-2">
-            <span className="opacity-80">{s.name}</span>
-            <span className="font-semibold">
-              {s.priceRUB !== undefined
-                ? `${s.priceRUB.toLocaleString('ru-RU')} ₽`
-                : 'уточняется'}
-            </span>
-          </li>
-        ))}
-      </ul>
-      {extraCount > 0 && (
-        <div className="text-[11px] opacity-70 mt-1">
-          + ещё {extraCount} усл{extraCount === 1 ? 'уга' : extraCount < 5 ? 'уги' : 'уг'}
+    <div className="flex flex-col gap-0.5 text-xs text-gray-600">
+      {items.map((s) => (
+        <div key={s.id} className="flex justify-between">
+          <span className="opacity-80">{s.name}</span>
+          <span className="font-semibold">
+            {s.priceRUB !== undefined
+              ? `${s.priceRUB.toLocaleString("ru-RU")} ₽`
+              : "уточняется"}
+          </span>
         </div>
-      )}
+      ))}
     </div>
   );
 }
 
 export default function Doctors() {
-  const [specialtyFilter, setSpecialtyFilter] = useState<string | 'all'>('all');
-  const [showAll, setShowAll] = useState(false);
+  const [visible, setVisible] = useState(INITIAL_VISIBLE);
 
-  const specialties = useMemo(
-    () => Array.from(new Set(doctors.map((d) => d.specialty))),
-    []
-  );
-
-  const filtered = useMemo(
-    () =>
-      specialtyFilter === 'all'
-        ? doctors
-        : doctors.filter((d) => d.specialty === specialtyFilter),
-    [specialtyFilter]
-  );
-
-  const total = filtered.length;
-  const visibleDoctors = showAll ? filtered : filtered.slice(0, INITIAL_VISIBLE);
-  const hiddenCount = total - visibleDoctors.length;
+  const visibleDoctors = useMemo(() => doctors.slice(0, visible), [visible]);
+  const hiddenCount = doctors.length - visible;
 
   return (
-    <section className="container py-12 sm:py-16">
-      <div className="flex items-end justify-between gap-3 mb-6 flex-wrap">
-        <div>
-          <h2
-            className="text-3xl font-bold"
-            style={{ color: 'var(--navy)' }}
-          >
-            Врачи OnlyVet
-          </h2>
-          <p className="opacity-80 text-sm sm:text-base max-w-xl mt-1">
-            Онлайн-консультации проводят практикующие врачи с опытом работы в
-            клинике. Выберите специалиста под задачу вашего питомца.
-          </p>
-        </div>
-        <Link
-          href="/services"
-          className="btn bg-white border border-gray-300 rounded-xl px-4 text-sm sm:text-base"
-        >
-          Услуги и цены
-        </Link>
-      </div>
+    <section className="container py-12 space-y-6">
+      <h2 className="text-2xl font-semibold">Наши врачи</h2>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-3 mb-6 flex flex-wrap gap-2">
-        <button
-          onClick={() => setSpecialtyFilter('all')}
-          className={`text-xs sm:text-sm px-3 py-1 rounded-full border ${
-            specialtyFilter === 'all'
-              ? 'bg-[var(--teal)] text-white border-[var(--teal)]'
-              : 'bg-[var(--cloud)] hover:bg-white'
-          }`}
-        >
-          Все специальности
-        </button>
-        {specialties.map((sp) => (
-          <button
-            key={sp}
-            onClick={() => setSpecialtyFilter(sp)}
-            className={`text-xs sm:text-sm px-3 py-1 rounded-full border ${
-              specialtyFilter === sp
-                ? 'bg-[var(--teal)] text-white border-[var(--teal)]'
-                : 'bg-[var(--cloud)] hover:bg-white'
-          }`}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {visibleDoctors.map((doctor) => (
+          <article
+            key={doctor.id}
+            className="rounded-2xl border border-gray-200 bg-white p-4 flex flex-col gap-3"
           >
-            {sp}
-          </button>
+            {/* Фото/аватар */}
+            <div className="flex items-start justify-between gap-3">
+              <Image
+                src={doctor.avatar || "/avatar.png"}
+                alt={doctor.name}
+                width={56}
+                height={56}
+                className="rounded-full object-cover"
+              />
+              <div className="flex flex-col items-end text-xs text-gray-500">
+                <span>{doctor.experience || "Опыт не указан"}</span>
+              </div>
+            </div>
+
+            {/* Имя и специальность */}
+            <div>
+              <h3 className="font-semibold text-base">{doctor.name}</h3>
+              <p className="text-xs text-gray-500">{doctor.speciality}</p>
+            </div>
+
+            {/* Рейтинг */}
+            <div className="flex items-center gap-1 text-xs text-gray-600">
+              <span>⭐</span>
+              <span>{doctor.rating?.toFixed(1) ?? "5.0"}</span>
+            </div>
+
+            {/* Мини-ценник */}
+            <MiniPrice doctor={doctor} />
+
+            {/* Кнопки */}
+            <div className="flex justify-between items-center mt-2">
+              <Link
+                href={`/doctors/${doctor.id}`}
+                className="text-xs text-blue-600 underline underline-offset-2"
+              >
+                Подробнее
+              </Link>
+
+              <Link
+                href={`/booking?doctor=${doctor.id}`}
+                className="px-3 py-1.5 rounded-xl bg-black text-white text-xs"
+              >
+                Записаться
+              </Link>
+            </div>
+          </article>
         ))}
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {visibleDoctors.map((doctor) => {
-          const rating =
-            (doctor as any).rating !== undefined ? (doctor as any).rating : 4.9;
-          const consultations =
-            (doctor as any).consultations !== undefined
-              ? (doctor as any).consultations
-              : 120;
-
-          return (
-            <article
-              key={doctor.id}
-              className="rounded-2xl border border-gray-200 bg-white p-4 flex flex-col gap-3"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-full overflow-hidden bg-[var(--cloud)] flex items-center justify-center">
-                    {doctor.photo ? (
-                      <Image
-                        src={doctor.photo}
-                        alt={doctor.name}
-                        width={80}
-                        height={80}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-xl opacity-50">
-                        {doctor.name.charAt(0)}
-                      </span>
-                    )}
-                  </div>
-                  <div>
-                    <h3
-                      className="font-semibold text-lg"
-                      style={{ color: 'var(--navy)' }}
-                    >
-                      {doctor.name}
-                    </h3>
-                    <div className="text-sm opacity-80">
-                      {doctor.specialty}
-                    </div>
-                    {doctor.experience && (
-                      <div className="text-xs opacity-70">
-                        Стаж: {doctor.experience} лет
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-xs opacity-80 mt-1">
-                <span>⭐ {rating.toFixed(1)}</span>
-                <span className="opacity-60">
-                  · {consultations}+ онлайн-консультаций
-                </span>
-              </div>
-
-              <MiniPrice doctor={doctor} />
-
-              <div className="flex justify-end gap-2 mt-2">
-                <Link
-                  href={`/doctors/${doctor.id}`}
-                  className="btn bg-white border border-gray-300 rounded-xl px-3 text-sm"
-                >
-                  Подробнее
-                </Link>
-                <Link
-                  href={{
-                    pathname: '/booking',
-                    query: { doctorEmail: doctor.email },
-                  }}
-                  className="btn btn-primary rounded-xl px-3 text-sm"
-                >
-                  Записаться
-                </Link>
-              </div>
-            </article>
-          );
-        })}
-      </div>
-
-      {total > INITIAL_VISIBLE && (
-        <div className="mt-6 flex justify-center">
+      {/* Кнопка "Показать ещё" */}
+      {hiddenCount > 0 && (
+        <div className="flex justify-center">
           <button
-            className="text-sm px-4 py-2 rounded-full border bg-white hover:bg-[var(--cloud)]"
-            onClick={() => setShowAll((prev) => !prev)}
+            onClick={() =>
+              setVisible((v) =>
+                v === INITIAL_VISIBLE ? doctors.length : INITIAL_VISIBLE
+              )
+            }
+            className="px-4 py-2 text-sm rounded-xl border bg-white"
           >
-            {showAll
-              ? 'Свернуть список врачей'
+            {visible === doctors.length
+              ? "Свернуть список врачей"
               : `Показать ещё ${hiddenCount} врач${
                   hiddenCount === 1
-                    ? 'а'
+                    ? "а"
                     : hiddenCount < 5
-                    ? 'ей'
-                    : 'ей'
+                    ? "ей"
+                    : "ей"
                 }`}
           </button>
         </div>
