@@ -5,10 +5,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
-export const metadata = {
-  title: "Вход — OnlyVet",
-};
-
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,8 +23,7 @@ export default function LoginPage() {
       });
       if (error) throw error;
 
-      // TODO: можно сделать редирект в личный кабинет,
-      // пока просто перезагрузим страницу или покажем сообщение
+      // TODO: сюда потом поставим редирект в кабинет
       window.location.href = "/";
     } catch (err: any) {
       setError(err.message || "Не удалось войти. Проверьте данные.");
@@ -45,9 +40,7 @@ export default function LoginPage() {
           <Link href="/" className="text-sm text-gray-500 hover:text-gray-800">
             ← На главную
           </Link>
-          <div className="text-sm font-semibold tracking-tight">
-            OnlyVet
-          </div>
+          <div className="text-sm font-semibold tracking-tight">OnlyVet</div>
         </div>
 
         {/* Карточка авторизации */}
@@ -57,7 +50,7 @@ export default function LoginPage() {
           </h1>
           <p className="text-xs text-gray-500 mb-5">
             Используйте email и пароль, указанные при регистрации. Если вы ещё
-            не зарегистрированы — это можно будет сделать после первого входа.
+            не зарегистрированы — это можно будет сделать позже.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
