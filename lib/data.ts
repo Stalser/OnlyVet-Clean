@@ -6,9 +6,9 @@ export type Doctor = {
   speciality: string;
   bio?: string;
   rating?: number;
-  avatar?: string;      // путь к аватарке
-  experience?: string;  // стаж в удобном для вывода виде
-  email?: string;       // при желании можно использовать для карт
+  avatar?: string;      // аватар врача
+  experience?: string;  // стаж
+  email?: string;       // опционально, если понадобится
 };
 
 export const doctors: Doctor[] = [
@@ -22,7 +22,7 @@ export const doctors: Doctor[] = [
     experience: "Опыт 7 лет",
     email: "ivanov@example.com",
   },
-  // сюда можно потом добавлять других врачей по тому же шаблону
+  // сюда потом можно добавлять остальных врачей
 ];
 
 export function getDoctorById(id: string): Doctor | undefined {
